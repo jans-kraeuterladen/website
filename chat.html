@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { font-family: "Rubik", sans-serif; box-sizing: border-box; }
+        :root {--color-1: #A79277; --color-2: #FFF2E1;}
+        body { margin: 0; display: flex; flex-direction: column; height: 100vh;}
+        .header-content { background: linear-gradient(135deg, #FF5C00 0%, #C81896 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 8px rgba(255, 92, 0, 0.5)); padding: 15px; text-align: center; font-weight: bold; font-size: 1.2rem;}
+        #header {background-color: var(--color-2); border-bottom: 1px solid var(--color-1);}
+        #info { font-size: 0.8rem; }
+        #chatbox { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 14px; background-color: var(--color-2); }
+        #input-area { display: flex; gap: 5px; border-top: 1px solid var(--color-1); padding: 10px; background-color: var(--color-2);}
+        input::placeholder { color: var(--color-1); opacity: 1; }
+        input {font-size: 1rem; flex: 1; border: 1px solid var(--color-1); background-color: var(--color-2); color: var(--color-1); padding: 10px; border-radius: 5px; outline: none; width: auto}
+        button { font-size: 1rem; background-color: var(--color-2); color: var(--color-1); padding: 10px; border-radius: 5px; cursor: pointer; border: 1px solid var(--color-1); width: 30%; flex-shrink: 0;}
+        button:disabled { background: #aaa; cursor: not-allowed; }
+        button:hover {background: linear-gradient(135deg, #FF5C00 0%, #C81896 100%); filter: drop-shadow(0 0 8px rgba(255, 92, 0, 1.0)); border: 1px, solid transparent; color: var(--color-2)}
+        .msg { padding: 10px; border-radius: 10px; max-width: 80%; font-size: 1rem;}
+        .user { background: var(--color-1); color: var(--color-2); align-self: flex-end; }
+        .ai { background: linear-gradient(135deg, #FF5C00, #c81896); color: var(--color-2); align-self: flex-start;filter: drop-shadow(0 0 8px rgba(255, 92, 0, 0.5)) }
+        .error { background: rgb(218, 145, 145); color: #c0392b; align-self: flex-start; }
+        .typing { color: var(--color-2); font-style: italic; }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Rubik:ital,wght@0,300..900;1,300..900&family=Slabo+27px&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div id="header">
+  <div class="header-content">
+    <div>Chatten Sie jetzt mit Kräuti.</div>
+    <div id="info">Powered by Mistral AI - made in Europe <br> KI kann Fehler machen. Prüfen Sie die Antworten.</div>
+  </div>  
+</div>
+<div id="chatbox">
+    <div class="msg ai">Hallo! Ich bin Kräuti und beantworte Ihnen alle  Fragen rund um Kräuter. Außerdem kann ich Sie über alle unsere Produkten informieren. </div>
+</div>
+<div id="input-area">
+    <input type="text" id="userInput" placeholder="Frage eingeben..." onkeypress="if(event.key === 'Enter') senden()">
+    <button id="sendBtn" onclick="senden()">Senden</button>
+</div>
+
+<script>
+  const EDGE_FUNCTION_URL = "https://iydsqjtkokkcbxdrwaav.supabase.co/functions/v1/dynamic-task";
+
+  async function senden() {
+    const input = document.getElementById("userInput");
+    const chatbox = document.getElementById("chatbox");
+    const sendBtn = document.getElementById("sendBtn");
+    const text = input.value.trim();
+
+    if (!text) return;
+
+    // Nutzernachricht anzeigen
+    const userMsg = document.createElement("div");
+    userMsg.className = "msg user";
+    userMsg.textContent = text;
+    chatbox.appendChild(userMsg);
+    input.value = "";
+    sendBtn.disabled = true;
+
+    // Tipp-Indikator
+    const typing = document.createElement("div");
+    typing.className = "msg ai typing";
+    typing.textContent = "Kräuti schreibt...";
+    chatbox.appendChild(typing);
+    chatbox.scrollTop = chatbox.scrollHeight;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
+    try {
+      const res = await fetch(EDGE_FUNCTION_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      const data = await res.json();
+      typing.remove();
+
+      const aiMsg = document.createElement("div");
+      aiMsg.className = "msg ai";
+      aiMsg.textContent = data.antwort || "Kräuti war eben nicht verfügbar. Bitte versuchen Sie es erneut.";
+      chatbox.appendChild(aiMsg);
+
+    } catch (e) {
+      clearTimeout(timeout);
+      typing.remove();
+      const errMsg = document.createElement("div");
+      errMsg.className = "msg ai";
+      errMsg.textContent = "Kräuti war eben nicht verfügbar. Bitte versuchen Sie es erneut.";
+      chatbox.appendChild(errMsg);
+    }
+
+    sendBtn.disabled = false;
+    chatbox.scrollTop = chatbox.scrollHeight;
+    input.focus();
+  }
+</script>
+
+</body>
+</html>
