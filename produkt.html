@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <title>Produkt – Jans Kräuterladen</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Rubik:ital,wght@0,300..900;1,300..900&family=Slabo+27px&display=swap" rel="stylesheet">
+    <style>
+
+        body { display: flex; flex-direction: column; min-height: 100vh; }
+        main { flex: 1; }
+
+        /* BACK LINK */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 14px 12px 0;
+            font-size: 0.82rem;
+            color: var(--color-1);
+            opacity: 0.6;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .back-link:hover { opacity: 1; }
+        .back-link svg { flex-shrink: 0; }
+
+        /* LAYOUT */
+        .product-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            padding: 14px 12px 50px;
+            color: var(--color-1);
+        }
+
+        /* IMAGE */
+        .product-img-wrap {
+            border: 1px solid rgba(167,146,119,0.3);
+            border-radius: 5px;
+            overflow: hidden;
+            aspect-ratio: 1/1;
+            background: var(--color-2);
+        }
+        .product-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .product-img-placeholder {
+            width: 100%; height: 100%;
+            background: var(--color-2);
+        }
+
+        /* INFO */
+        .product-info { display: flex; flex-direction: column; gap: 16px; padding-bottom: 10px; }
+
+        .status-badge {
+            display: inline-block; font-size: 0.65rem; font-weight: 500;
+            letter-spacing: 0.05em; text-transform: uppercase;
+            padding: 3px 8px; border-radius: 999px; align-self: flex-start;
+        }
+        .status-badge.verfuegbar { background: #e6f4ea; color: #2d7a3a; }
+        .status-badge.bald       { background: #fff3e0; color: #a07020; }
+        .status-badge.nicht      { background: #fdecea; color: #c0392b; }
+
+        .product-name { font-size: 1.6rem; font-weight: 500; line-height: 1.2; }
+        .product-kurz { font-size: 0.88rem; line-height: 1.65; opacity: 0.75; }
+
+        /* OPTIONS */
+        .section-label {
+            font-size: 0.72rem; font-weight: 500; letter-spacing: 0.07em;
+            text-transform: uppercase; opacity: 0.55; margin-bottom: 8px;
+        }
+        .option-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+        .option-btn {
+            font-family: "Rubik", sans-serif;
+            font-size: 0.82rem;
+            padding: 7px 14px;
+            border: 1px solid rgba(167,146,119,0.5);
+            border-radius: 5px;
+            background: #fff;
+            color: var(--color-1);
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+        .option-btn:hover { border-color: var(--color-1); }
+        .option-btn.selected { background: var(--color-1); color: var(--color-2); border-color: var(--color-1); }
+
+        /* MENGE */
+        .qty-control {
+            display: flex; align-items: center;
+            border: 1px solid rgba(167,146,119,0.5);
+            border-radius: 5px; overflow: hidden; width: fit-content;
+        }
+        .qty-btn {
+            width: 36px; height: 36px; border: none; background: var(--color-2);
+            font-size: 1rem; cursor: pointer; color: var(--color-1);
+            transition: background 0.15s; font-family: "Rubik", sans-serif;
+        }
+        .qty-btn:hover { background: var(--color-1); color: var(--color-2); }
+        .qty-num {
+            width: 44px; height: 36px; border: none;
+            border-left: 1px solid rgba(167,146,119,0.3);
+            border-right: 1px solid rgba(167,146,119,0.3);
+            background: #fff; text-align: center;
+            font-family: "Rubik", sans-serif; font-size: 0.9rem; font-weight: 500; color: var(--color-1);
+            display: flex; align-items: center; justify-content: center;
+            line-height: 36px; padding: 0;
+        }
+        .qty-num::-webkit-outer-spin-button,
+        .qty-num::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+        /* PREIS ANZEIGE */
+        .preis-block { display: flex; flex-direction: column; gap: 3px; }
+        .preis-endpreis {
+            font-size: 1.3rem; font-weight: 500;
+        }
+        .preis-endpreis.has-rabatt { color: #c0392b; }
+        .preis-stueck {
+            font-size: 0.78rem; opacity: 0.6;
+        }
+        .preis-stueck.has-rabatt { color: #c0392b; opacity: 1; }
+        .preis-row-rabatt {
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .preis-original {
+            font-size: 0.85rem; text-decoration: line-through; opacity: 0.4;
+        }
+        .preis-rabatt-label {
+            font-size: 0.75rem; font-weight: 600; color: #c0392b;
+            background: #fdecea; padding: 2px 7px; border-radius: 999px;
+        }
+
+        /* ADD TO CART */
+        .add-btn {
+            width: 100%; padding: 11px;
+            background: var(--color-1); color: var(--color-2);
+            border: none; border-radius: 5px;
+            font-family: "Rubik", sans-serif; font-size: 0.85rem; font-weight: 500;
+            cursor: pointer; transition: opacity 0.2s;
+        }
+        .add-btn:hover:not(:disabled) { opacity: 0.85; }
+        .add-btn:disabled {
+            background: rgba(167,146,119,0.2); color: rgba(167,146,119,0.6);
+            cursor: not-allowed;
+        }
+
+        /* DETAILS */
+        .detail-item { border-top: 1px solid rgba(167,146,119,0.25); padding: 14px 0; margin: 0; }
+        .detail-item.last-visible { border-bottom: 1px solid rgba(167,146,119,0.25); }
+        details { margin: 0; padding: 0; }
+        details summary {
+            font-size: 0.78rem; font-weight: 500; letter-spacing: 0.07em;
+            text-transform: uppercase; opacity: 0.65;
+            cursor: pointer; list-style: none; display: flex;
+            justify-content: space-between; align-items: center;
+            min-height: 1.4rem;
+        }
+        details summary::-webkit-details-marker { display: none; }
+        details summary::marker { display: none; }
+        details summary::after { content: '+'; font-size: 1rem; font-weight: 300; flex-shrink: 0; }
+        details[open] summary::after { content: '-'; }
+        details p { font-size: 0.85rem; line-height: 1.65; opacity: 0.7; padding-top: 8px; }
+
+        /* TOAST */
+        .toast {
+            position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(6px);
+            background: var(--color-1); color: var(--color-2);
+            padding: 10px 20px; border-radius: 5px;
+            font-size: 0.82rem; opacity: 0; transition: all 0.25s;
+            pointer-events: none; z-index: 999; white-space: nowrap;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        .state-box { text-align: center; padding: 3rem 1rem; color: var(--color-1); opacity: 0.6; }
+        .spinner { width: 26px; height: 26px; border: 2px solid rgba(167,146,119,0.3); border-top-color: var(--color-1); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 0.75rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (min-width: 680px) {
+            .product-layout { grid-template-columns: 1fr 1fr; align-items: start; padding: 20px 50px 60px; }
+            .back-link { padding: 16px 50px 0; }
+            .product-img-wrap { position: sticky; top: 20px; }
+        }
+        @media (min-width: 900px) {
+            .product-layout { gap: 40px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <nav>
+        <div class="nav-logo">Jans Kräuterladen</div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="kontakt.html">Kontakt</a>
+            <a href="shop.html" class="underlined">Shop</a>
+            <a href="warenkorb.html">Warenkorb</a>
+        </div>
+    </nav>
+</header>
+
+<main>
+    <div id="loadingState" class="state-box">
+        <div class="spinner"></div>
+        <p>Produkt wird geladen…</p>
+    </div>
+    <div id="errorState" class="state-box" style="display:none">
+        <p id="errorMsg">Produkt nicht gefunden.</p>
+    </div>
+
+    <div id="productContent" style="display:none">
+        <a href="shop.html" class="back-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            Zurück zur Produktübersicht
+        </a>
+
+        <div class="product-layout">
+            <div class="product-img-wrap" id="imgWrap">
+                <div class="product-img-placeholder"></div>
+            </div>
+
+            <div class="product-info">
+                <span class="status-badge" id="statusBadge"></span>
+                <h1 class="product-name" id="productName"></h1>
+                <p class="product-kurz" id="produktKurz"></p>
+
+                <div>
+                    <div class="section-label">Menge</div>
+                    <div class="qty-control">
+                        <button class="qty-btn" id="qtyMinus">-</button>
+                        <input class="qty-num" id="qtyNum" type="number" value="1" min="1" readonly />
+                        <button class="qty-btn" id="qtyPlus">+</button>
+                    </div>
+                </div>
+
+                <div class="preis-block" id="preisBlock">
+                    <div class="preis-endpreis" id="preisEndpreis">–</div>
+                    <div class="preis-stueck" id="preisStueck"></div>
+                    <div class="preis-row-rabatt" id="preisRabattRow" style="display:none">
+                        <span class="preis-original" id="preisOriginal"></span>
+                        <span class="preis-rabatt-label" id="preisRabattLabel"></span>
+                    </div>
+                </div>
+
+                <button class="add-btn" id="addBtn">In den Warenkorb</button>
+
+                <div class="detail-item" id="wrapDesc">
+                    <details>
+                        <summary>Beschreibung</summary>
+                        <p id="detailDesc"></p>
+                    </details>
+                </div>
+                <div class="detail-item" id="wrapStorage">
+                    <details>
+                        <summary>Lagerungshinweis</summary>
+                        <p id="detailStorage"></p>
+                    </details>
+                </div>
+                <div class="detail-item" id="wrapPrep">
+                    <details>
+                        <summary>Zubereitung</summary>
+                        <p id="detailPrep"></p>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="footer-logo">Jans Kräuterladen</div>
+    <div class="footer-links">
+        <a href="baustelle.html">Datenschutzerklärung</a>
+        <a href="baustelle.html">Impressum</a>
+        <a href="baustelle.html">AGB</a>
+        <a href="baustelle.html">Widerrufsbelehrung</a>
+    </div>
+    <div class="footer-copyright">&copy; 2026 Jans Kräuterladen</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL  = 'https://iydsqjtkokkcbxdrwaav.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5ZHNxanRrb2trY2J4ZHJ3YWF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Njk2NTIsImV4cCI6MjA5MjE0NTY1Mn0.qLiRzBRJuYr7Q65UGueVY76BKP6huOVnnxUqWKdjgCI';
+const BUCKET = 'produkte';
+const JSON_FILE = 'products.json';
+
+let product = null, selectedOption = null, qty = 1;
+
+function getCart() { return JSON.parse(localStorage.getItem('kraeuterladen_cart') || '[]'); }
+function saveCart(c) { localStorage.setItem('kraeuterladen_cart', JSON.stringify(c)); }
+function imageUrl(p) { return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${p}`; }
+function fmt(n) { return n.toFixed(2).replace('.', ',') + ' €'; }
+
+function updateCartBadge() {}
+
+function parseRabatt(preis, rabattStr) {
+    const s = String(rabattStr ?? '0').trim();
+    if (!s || s === '0') return 0;
+    if (s.endsWith('%')) {
+        return preis * (parseFloat(s) / 100); // negativ, z.B. -0.2 bei -20%
+    }
+    return 0;
+}
+
+function hasRabatt(opt) {
+    if (!opt) return false;
+    const s = String(opt.rabatt ?? '0').trim();
+    if (!s || s === '0') return false;
+    return parseRabatt(opt.preis, s) !== 0;
+}
+
+function optLabel(v) { return v <= 5 ? `${v} Stück` : `${v} g`; }
+
+function statusClass(s) {
+    if (s === 'verfügbar') return 'verfuegbar';
+    if (s === 'bald verfügbar') return 'bald';
+    return 'nicht';
+}
+function statusLabel(s) {
+    if (s === 'verfügbar') return 'Verfügbar';
+    if (s === 'bald verfügbar') return 'Bald verfügbar';
+    return 'Nicht verfügbar';
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// qty wählt die Option aus optionen[qty-1] (1→opt[0], 2→opt[1], …)
+function getCurrentOpt() {
+    const idx = Math.min(qty, product.optionen.length) - 1;
+    return product.optionen[idx];
+}
+
+// Rundung auf Cent (vermeidet 5.699999...)
+function rnd(n) { return Math.round(n * 100) / 100; }
+
+function calcEndpreis(opt) {
+    if (!opt) return { endpreis: 0, original: 0, hatRabatt: false };
+    const hatRabatt = hasRabatt(opt);
+    const rabattBetrag = hatRabatt ? parseRabatt(opt.preis, opt.rabatt) : 0;
+    return {
+        endpreis: rnd(opt.preis + rabattBetrag),
+        original: opt.preis,
+        hatRabatt
+    };
+}
+
+function updatePreisBlock() {
+    const opt = getCurrentOpt();
+    if (!opt) return;
+
+    const { endpreis, original, hatRabatt } = calcEndpreis(opt);
+    // Preis pro Stück: Gesamtpreis der Option geteilt durch Menge
+    const preisProStueck = rnd(endpreis / qty);
+    const origProStueck  = rnd(original / qty);
+
+    const elEndpreis    = document.getElementById('preisEndpreis');
+    const elStueck      = document.getElementById('preisStueck');
+    const elRabattRow   = document.getElementById('preisRabattRow');
+    const elOriginal    = document.getElementById('preisOriginal');
+    const elRabattLabel = document.getElementById('preisRabattLabel');
+
+    elEndpreis.textContent = fmt(endpreis);
+    elEndpreis.className = 'preis-endpreis' + (hatRabatt ? ' has-rabatt' : '');
+
+    elStueck.textContent = `${fmt(preisProStueck)} / Stück`;
+    elStueck.className = 'preis-stueck' + (hatRabatt ? ' has-rabatt' : '');
+
+    if (hatRabatt) {
+        elOriginal.textContent = fmt(original);
+        elRabattLabel.textContent = String(opt.rabatt).trim();
+        elRabattRow.style.display = 'flex';
+    } else {
+        elRabattRow.style.display = 'none';
+    }
+}
+
+function updateAddBtn() {
+    const btn = document.getElementById('addBtn');
+    const s = product['produkt-status'];
+    if (s !== 'verfügbar') {
+        btn.disabled = true;
+        btn.textContent = s === 'bald verfügbar' ? 'Bald verfügbar' : 'Nicht verfügbar';
+    } else {
+        btn.disabled = false;
+        btn.textContent = 'In den Warenkorb';
+    }
+}
+
+document.getElementById('qtyMinus').addEventListener('click', () => {
+    if (qty > 1) { qty--; document.getElementById('qtyNum').value = qty; updatePreisBlock(); }
+});
+document.getElementById('qtyPlus').addEventListener('click', () => {
+    const maxQty = Math.min(product.optionen.length, product['aktuelles-kundenlimit'] || 99);
+    if (qty < maxQty) { qty++; document.getElementById('qtyNum').value = qty; updatePreisBlock(); }
+});
+
+document.getElementById('addBtn').addEventListener('click', () => {
+    const opt = getCurrentOpt();
+    if (!opt) return;
+    const { endpreis, original, hatRabatt } = calcEndpreis(opt);
+
+    const cart = getCart();
+    const key = `${product.id}`;
+    const ex = cart.find(i => i.key === key);
+
+    // Wir speichern immer Gesamtpreis + Menge — niemals dividiert
+    // Warenkorb rechnet: gesamtpreis ist der Preis für `menge` Stück
+    // preisProStueck = rnd(gesamtpreis / menge) — nur zur Anzeige
+    const eintrag = {
+        key,
+        produktId: product.id,
+        name: product['produkt-name'],
+        anzahl: qty,
+        ursprungspreis: original,              // Originalpreis der Option (ohne Rabatt)
+        rabattpreis: endpreis,                 // Preis nach Rabatt
+        gesamtpreis: endpreis,                 // = rabattpreis (Gesamtpreis für anzahl Stück)
+        ursprungProStueck: rnd(original / qty),
+        rabattProStueck: rnd(endpreis / qty),
+        hatRabatt,
+        rabattLabel: hatRabatt ? String(opt.rabatt).trim() : '',
+        bild: product['produkt-bild']
+    };
+
+    if (ex) {
+        Object.assign(ex, eintrag);
+    } else {
+        cart.push(eintrag);
+    }
+    saveCart(cart);
+    updateCartBadge();
+    showToast(`${product['produkt-name']} in den Warenkorb gelegt ✓`);
+});
+
+(async () => {
+    updateCartBadge();
+    const id = parseInt(new URLSearchParams(location.search).get('id'));
+    if (!id) { showError('Keine Produkt-ID angegeben.'); return; }
+    try {
+        const res = await fetch(`${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${JSON_FILE}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const products = await res.json();
+        product = products.find(p => p.id === id);
+        if (!product) throw new Error('Produkt nicht gefunden');
+
+        document.title = `${product['produkt-name']} – Jans Kräuterladen`;
+        document.getElementById('productName').textContent = product['produkt-name'];
+        document.getElementById('produktKurz').textContent = product['kurzbeschreibung'] || '';
+
+        // Akkordeon: nur anzeigen wenn Inhalt vorhanden
+        function fillAccordion(elId, wrapperId, text) {
+            const inhalt = (text || '').trim();
+            const wrapper = document.getElementById(wrapperId);
+            if (inhalt) {
+                document.getElementById(elId).textContent = inhalt;
+            } else {
+                wrapper.style.display = 'none';
+            }
+        }
+        fillAccordion('detailDesc',    'wrapDesc',    product['produkt-beschreibung']);
+        fillAccordion('detailStorage', 'wrapStorage', product['lagerungshinweis']);
+        fillAccordion('detailPrep',    'wrapPrep',    product['zubereitungstipps']);
+
+        // Border-bottom auf letztem sichtbaren Akkordeon
+        const wrappers = ['wrapDesc','wrapStorage','wrapPrep'];
+        wrappers.forEach(id => document.getElementById(id).classList.remove('last-visible'));
+        const lastVisible = [...wrappers].reverse().find(id => document.getElementById(id).style.display !== 'none');
+        if (lastVisible) document.getElementById(lastVisible).classList.add('last-visible');
+
+        const badge = document.getElementById('statusBadge');
+        badge.textContent = statusLabel(product['produkt-status']);
+        badge.className = `status-badge ${statusClass(product['produkt-status'])}`;
+
+        const imgWrap = document.getElementById('imgWrap');
+        const img = document.createElement('img');
+        img.alt = product['produkt-name'];
+        img.src = imageUrl(product['produkt-bild']);
+        img.onerror = () => { imgWrap.innerHTML = '<div class="product-img-placeholder"></div>'; };
+        imgWrap.innerHTML = '';
+        imgWrap.appendChild(img);
+
+        // Preis initialisieren (qty=1 → optionen[0])
+        updatePreisBlock();
+        updateAddBtn();
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('productContent').style.display = 'block';
+    } catch(e) { showError(e.message); }
+})();
+
+function showError(msg) {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('errorState').style.display = 'block';
+    document.getElementById('errorMsg').textContent = msg;
+}
+</script>
+</body>
+</html>

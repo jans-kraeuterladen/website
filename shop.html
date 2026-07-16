@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <title>Shop – Jans Kräuterladen</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Rubik:ital,wght@0,300..900;1,300..900&family=Slabo+27px&display=swap" rel="stylesheet">
+    <style>
+
+        body { display: flex; flex-direction: column; min-height: 100vh; }
+        main { flex: 1; }
+
+        .shop-header {
+            color: var(--color-1);
+            padding: 24px 12px 0;
+        }
+        .shop-header h1 {
+            font-size: 1.6rem;
+            font-weight: 500;
+            margin-bottom: 18px;
+        }
+
+        .pill-row-label {
+            font-size: 0.72rem;
+            font-weight: 500;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            opacity: 0.55;
+            margin-bottom: 7px;
+        }
+        .pill-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+        .pill-btn {
+            font-family: "Rubik", sans-serif;
+            font-size: 0.78rem;
+            padding: 5px 14px;
+            border: 1px solid var(--color-1);
+            border-radius: 999px;
+            background: transparent;
+            color: var(--color-1);
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+        .pill-btn:hover { background: var(--color-1); color: var(--color-2); }
+        .pill-btn.active { background: var(--color-1); color: var(--color-2); }
+
+        .filter-divider {
+            border: none;
+            border-top: 1px solid rgba(167,146,119,0.3);
+            margin: 4px 0 12px;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            padding: 10px 12px 40px;
+        }
+
+        .no-products {
+            text-align: center;
+            padding: 4rem 1rem;
+            color: var(--color-1);
+            opacity: 0.45;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .product-card {
+            border: 1px solid rgba(167,146,119,0.35);
+            border-radius: 5px;
+            overflow: hidden;
+            text-decoration: none;
+            color: var(--color-1);
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
+            opacity: 0;
+            animation: fadeUp 0.35s ease forwards;
+        }
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(167,146,119,0.2);
+        }
+        .product-card.niet-klikbaar:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .card-img {
+            width: 100%; aspect-ratio: 1/1;
+            background: var(--color-2);
+            overflow: hidden;
+            position: relative;
+        }
+        .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .product-card:hover .card-img img { transform: scale(1.04); }
+        .product-card.niet-klikbaar:hover .card-img img { transform: none; }
+        .card-img-placeholder {
+            width: 100%; height: 100%;
+            background: var(--color-2);
+        }
+
+        .card-rabatt-badge {
+            position: absolute;
+            top: 7px; right: 7px;
+            background: #c0392b;
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 3px 7px;
+            border-radius: 999px;
+        }
+
+        .card-body { padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+        .card-name { font-size: 0.95rem; font-weight: 500; line-height: 1.2; }
+        .card-price { font-size: 0.82rem; }
+        .card-price strong { font-weight: 600; }
+        .card-price .price-red { color: #c0392b; font-weight: 600; }
+        .card-price .price-old { text-decoration: line-through; opacity: 0.4; font-size: 0.75rem; margin-left: 3px; }
+
+        .status-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 999px;
+            margin-top: auto;
+            align-self: flex-start;
+        }
+        .status-badge.verfuegbar { background: #e6f4ea; color: #2d7a3a; }
+        .status-badge.bald       { background: #fff3e0; color: #a07020; }
+        .status-badge.nicht      { background: #fdecea; color: #c0392b; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .state-box { text-align: center; padding: 3rem 1rem; color: var(--color-1); opacity: 0.6; }
+        .spinner { width: 26px; height: 26px; border: 2px solid rgba(167,146,119,0.3); border-top-color: var(--color-1); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 0.75rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (min-width: 560px) {
+            .product-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (min-width: 900px) {
+            .product-grid { grid-template-columns: repeat(4, 1fr); padding: 10px 50px 60px; }
+            .shop-header { padding: 28px 50px 0; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <nav>
+        <div class="nav-logo">Jans Kräuterladen</div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="kontakt.html">Kontakt</a>
+            <a href="shop.html" class="underlined">Shop</a>
+            <a href="warenkorb.html">Warenkorb</a>
+        </div>
+    </nav>
+</header>
+
+<main>
+    <div class="shop-header">
+        <h1>Unser Sortiment</h1>
+
+        <div class="pill-row-label">Produktkategorien</div>
+        <div class="pill-row" id="katRow">
+            <button class="pill-btn active" data-kat="alle">Alle</button>
+            <button class="pill-btn" data-kat="Kräuter">Kräuter</button>
+            <button class="pill-btn" data-kat="Tee">Tee</button>
+            <button class="pill-btn" data-kat="Feinkost">Feinkost</button>
+            <button class="pill-btn" data-kat="Sonstige">Sonstige</button>
+        </div>
+
+        <div class="pill-row-label">Verfügbarkeit</div>
+        <div class="pill-row" id="filterRow">
+            <button class="pill-btn active" data-filter="alle">Alle</button>
+            <button class="pill-btn" data-filter="verfügbar">Verfügbar</button>
+            <button class="pill-btn" data-filter="bald verfügbar">Bald verfügbar</button>
+            <button class="pill-btn" data-filter="nicht verfügbar">Nicht verfügbar</button>
+        </div>
+    </div>
+
+    <hr class="filter-divider" style="margin: 0 12px 0;">
+
+    <div id="loadingState" class="state-box">
+        <div class="spinner"></div>
+        <p>Produkte werden geladen…</p>
+    </div>
+    <div id="errorState" class="state-box" style="display:none">
+        <p id="errorMsg">Fehler beim Laden.</p>
+    </div>
+
+    <div id="shopContent" style="display:none">
+        <div class="no-products" id="noProducts">Kein Produkt mit diesem Filter gefunden.</div>
+        <div class="product-grid" id="productGrid"></div>
+    </div>
+</main>
+
+<footer>
+    <div class="footer-logo">Jans Kräuterladen</div>
+    <div class="footer-links">
+        <a href="baustelle.html">Datenschutzerklärung</a>
+        <a href="baustelle.html">Impressum</a>
+        <a href="baustelle.html">AGB</a>
+        <a href="baustelle.html">Widerrufsbelehrung</a>
+    </div>
+    <div class="footer-copyright">&copy; 2026 Jans Kräuterladen</div>
+</footer>
+
+<script>
+const SUPABASE_URL  = 'https://iydsqjtkokkcbxdrwaav.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5ZHNxanRrb2trY2J4ZHJ3YWF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Njk2NTIsImV4cCI6MjA5MjE0NTY1Mn0.qLiRzBRJuYr7Q65UGueVY76BKP6huOVnnxUqWKdjgCI';
+const BUCKET = 'produkte';
+const JSON_FILE = 'products.json';
+
+let allProducts = [];
+let activeKat = 'alle';
+let activeFilter = 'alle';
+
+function getCart() { return JSON.parse(localStorage.getItem('kraeuterladen_cart') || '[]'); }
+
+function imageUrl(path) {
+    return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+}
+
+function parseRabatt(preis, rabattStr) {
+    if (!rabattStr || rabattStr === '0') return 0;
+    if (typeof rabattStr === 'string' && rabattStr.endsWith('%')) {
+        const pct = parseFloat(rabattStr);
+        return preis * (pct / 100);
+    }
+    return 0;
+}
+
+function hasRabatt(opt) {
+    return opt && opt.rabatt && opt.rabatt !== '0' && parseRabatt(opt.preis, opt.rabatt) !== 0;
+}
+
+function statusClass(s) {
+    if (s === 'verfügbar') return 'verfuegbar';
+    if (s === 'bald verfügbar') return 'bald';
+    return 'nicht';
+}
+function statusLabel(s) {
+    if (s === 'verfügbar') return 'Verfügbar';
+    if (s === 'bald verfügbar') return 'Bald verfügbar';
+    return 'Nicht verfügbar';
+}
+
+function shuffle(arr) {
+    return arr.map(v => ({ v, r: Math.random() })).sort((a, b) => a.r - b.r).map(x => x.v);
+}
+
+function renderCard(p, delay) {
+    const opt1 = p.optionen[0];
+    const hatRabatt = hasRabatt(opt1);
+    const rabattBetrag = hatRabatt ? parseRabatt(opt1.preis, opt1.rabatt) : 0;
+    const endpreis = opt1 ? opt1.preis + rabattBetrag : null;
+
+    const isNichtVerfuegbar = p['produkt-status'] === 'nicht verfügbar';
+
+    const a = document.createElement('a');
+    a.className = 'product-card' + (isNichtVerfuegbar ? ' niet-klikbaar' : '');
+    if (isNichtVerfuegbar) {
+        a.style.cursor = 'default';
+        a.style.pointerEvents = 'none';
+        a.style.opacity = '0.5';
+    } else {
+        a.href = `produkt.html?id=${p.id}`;
+    }
+    a.style.animationDelay = `${delay * 45}ms`;
+
+    let priceHTML = '';
+    if (endpreis !== null) {
+        if (hatRabatt) {
+            priceHTML = `<span class="price-red">${endpreis.toFixed(2).replace('.', ',')} €</span> <span class="price-old">${opt1.preis.toFixed(2).replace('.', ',')} €</span>`;
+        } else {
+            priceHTML = `<strong>${endpreis.toFixed(2).replace('.', ',')} €</strong>`;
+        }
+    }
+
+    a.innerHTML = `
+        <div class="card-img">
+            <img src="${imageUrl(p['produkt-bild'])}" alt="${p['produkt-name']}"
+                onerror="this.parentElement.innerHTML='<div class=\\'card-img-placeholder\\'></div>'" />
+            ${hatRabatt ? `<span class="card-rabatt-badge">${opt1.rabatt}</span>` : ''}
+        </div>
+        <div class="card-body">
+            <div class="card-name">${p['produkt-name']}</div>
+            <div class="card-price">${priceHTML}</div>
+            <span class="status-badge ${statusClass(p['produkt-status'])}">${statusLabel(p['produkt-status'])}</span>
+        </div>`;
+    return a;
+}
+
+function renderGrid() {
+    const grid = document.getElementById('productGrid');
+    const np = document.getElementById('noProducts');
+    grid.innerHTML = '';
+
+    let filtered = allProducts;
+    if (activeKat !== 'alle') filtered = filtered.filter(p => p.kategorie === activeKat);
+    if (activeFilter !== 'alle') filtered = filtered.filter(p => p['produkt-status'] === activeFilter);
+
+    if (!filtered.length) {
+        np.style.display = 'block';
+        return;
+    }
+    np.style.display = 'none';
+
+    const avail = shuffle(filtered.filter(p => p['produkt-status'] === 'verfügbar'));
+    const bald  = shuffle(filtered.filter(p => p['produkt-status'] === 'bald verfügbar'));
+    const nicht = shuffle(filtered.filter(p => p['produkt-status'] === 'nicht verfügbar'));
+
+    [...avail, ...bald, ...nicht].forEach((p, i) => grid.appendChild(renderCard(p, i)));
+}
+
+document.querySelectorAll('#katRow .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('#katRow .pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeKat = btn.dataset.kat;
+        renderGrid();
+    });
+});
+
+document.querySelectorAll('#filterRow .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('#filterRow .pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeFilter = btn.dataset.filter;
+        renderGrid();
+    });
+});
+
+(async () => {
+    try {
+        const res = await fetch(`${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${JSON_FILE}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        allProducts = await res.json();
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('shopContent').style.display = 'block';
+        renderGrid();
+    } catch(e) {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'block';
+        document.getElementById('errorMsg').textContent = 'Produkte konnten nicht geladen werden: ' + e.message;
+    }
+})();
+</script>
+</body>
+</html>
