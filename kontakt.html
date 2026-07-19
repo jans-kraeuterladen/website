@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>
+
+        <title>Kontakt - Jans Kräuterladen</title>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <meta property="og:title" content="Kontakt - Jans Kräuterladen" />
+        <meta property="og:description" content="Entdecken und kaufen Sie jetzt getrocknete Kräuter, aromatischen Tee, leckere Gewürze, köstliche Marmelade & vieles mehr aus Berlin und Brandenburg. " />
+        <meta property="og:url" content="https://jans-kraeuterladen.github.io/website/kontakt.html" />
+        <meta property="og:image" content="LOGO.jpeg" />
+
+        <link rel="stylesheet" href="style.css"/>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Rubik:ital,wght@0,300..900;1,300..900&family=Slabo+27px&display=swap" rel="stylesheet">
+    
+        <style>
+
+            :root {
+                --color-1: #A79277;
+                --color-2: #FFF2E1;
+            }
+
+           main {
+             background-color: var(--color-1);
+             color: var(--color-2);
+             display: flex;
+             flex-direction: column;
+           }
+
+           .box-mail, .box-ai {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 7px;
+            border: 1px solid var(--color-2);
+            padding: 10px;
+            border-radius: 5px;
+           }
+
+           .box-mail {
+            margin: 20px 20px 10px 20px;
+           }
+
+           .box-ai {
+            margin: 10px 20px 40px 20px;
+           }
+
+            .mail-button {
+            padding: 10px;
+            border: 1px solid var(--color-2);
+            border-radius: 5px;
+            color: var(--color-2); 
+            background-color: var(--color-1);
+            font-size: 1rem;
+            cursor: pointer;
+            }
+
+            .mail-button:hover {
+            background-color: var(--color-2);
+            color: var(--color-1);
+            }
+
+             
+            .supporti-headline {
+            background: linear-gradient(135deg, #00ff88 0%, #00e5ff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(0 0 8px rgba(0, 255, 136, 0.5));
+            }
+
+            .mail-flex {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                flex-wrap: wrap;
+                margin: 0px 10px 0px 10px;
+            }
+
+            iframe {
+                height: 45vh;
+                width: 100%;
+                border: 1px solid var(--color-1);
+                border-radius: 5px;
+            }
+
+            @media (min-width: 550px) {
+            .box-mail {
+            margin: 20px 40px 10px 40px;
+            }
+
+            .box-ai {
+            margin: 10px 40px 20px 40px;
+            }
+            }
+
+            @media (min-width: 900px) {
+            .box-mail {
+            margin: 20px 70px 10px 70px;
+            }
+
+            .box-ai {
+            margin: 10px 70px 20px 70px;
+            }
+
+            }
+
+            @media (min-width: 1200px) {
+            .box-mail {
+            margin: 20px 100px 10px 100px;
+            }
+
+            .box-ai {
+            margin: 10px 100px 20px 100px;
+            }
+
+            }
+
+           
+        </style>
+        
+    </head>
+
+    <body>
+
+        <header>
+            <nav>
+                <div class="nav-logo">Jans Kräuterladen</div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="kontakt.html" class="underlined">Kontakt</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="warenkorb.html">Warenkorb</a>
+                </div>
+            </nav>
+            <div class="nav-line"></div>
+        </header>
+
+        <main>
+            
+            <div class="box-mail">
+                    <h1>Kontaktieren Sie uns bei Anliegen, Fragen oder Feedback klassich per E-Mail oder wenden Sie sich an <span class="supporti-headline">Supporti.</span></h1>
+                    <div class="mail-flex">
+                        <h3>jans-kraeuterladen@outlook.com</h3>
+                        <a href="mailto:jans-kraeuterladen@outlook.com">
+                            <button type="button" class="mail-button">Jetzt Kontakt aufnehmen</button>
+                        </a>
+                    </div>
+            </div>
+            
+            <div class="box-ai">
+            <h1>Anliegen? Fragen? Feedback? <span class="supporti-headline">Supporti.</span></h1>
+                    <iframe src="supporti.html"></iframe>
+            </div>
+
+            
+
+        </main>
+
+        <footer>
+            <div class="footer-logo">Jans Kräuterladen</div>
+            <div class="footer-links">
+                <a href="datenschutzerklaerung.html">Datenschutzerklärung</a>
+                <a href="impressum.html">Impressum</a>
+                <a href="agb.html">AGB</a>
+                <a href="widerrufsbelehrung.html">Widerrufsbelehrung</a>
+            </div>
+            <div class="footer-copyright">&copy; 2026 Jans Kräuterladen</div>
+        </footer>
+
+        
+    </body>
+
+</html>

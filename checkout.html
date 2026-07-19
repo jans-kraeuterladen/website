@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <title>Checkout – Jans Kräuterladen</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Rubik:ital,wght@0,300..900;1,300..900&family=Slabo+27px&display=swap" rel="stylesheet">
+    <style>
+        .page-wrap { padding: 24px 12px 60px; color: var(--color-1); }
+        .page-wrap h1 { font-size: 1.6rem; font-weight: 500; margin-bottom: 20px; }
+
+        .checkout-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .form-card {
+            border: 1px solid rgba(167,146,119,0.35);
+            border-radius: 5px;
+            padding: 18px;
+            background: #fff;
+        }
+        .form-card + .form-card { margin-top: 12px; }
+        .card-title {
+            font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em;
+            text-transform: uppercase; opacity: 0.55;
+            padding-bottom: 12px; margin-bottom: 14px;
+            border-bottom: 1px solid rgba(167,146,119,0.2);
+        }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .form-row.full { grid-template-columns: 1fr; }
+
+        .field { display: flex; flex-direction: column; gap: 4px; }
+        .field label { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.04em; opacity: 0.55; text-transform: uppercase; }
+        .field input, .field select, .field textarea {
+            padding: 9px 10px;
+            border: 1px solid rgba(167,146,119,0.4);
+            border-radius: 5px;
+            background: var(--color-2);
+            font-family: "Rubik", sans-serif;
+            font-size: 0.875rem;
+            color: var(--color-1);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .field input:focus, .field select:focus, .field textarea:focus {
+            border-color: var(--color-1); background: #fff;
+        }
+        .err-msg { font-size: 0.7rem; color: #c0392b; display: none; }
+        .has-error .err-msg { display: block; }
+        .has-error input, .has-error select { border-color: #c0392b; }
+        .field textarea { resize: vertical; min-height: 72px; }
+        input::placeholder, textarea::placeholder { color: var(--color-1); opacity: 0.35; }
+        select option { background: #fff; color: var(--color-1); }
+
+        /* EMPFANGSART */
+        .delivery-toggle { display: flex; gap: 8px; }
+        .delivery-btn {
+            flex: 1; padding: 10px;
+            border: 1px solid rgba(167,146,119,0.4); border-radius: 5px;
+            background: var(--color-2); color: var(--color-1);
+            font-family: "Rubik", sans-serif; font-size: 0.85rem; font-weight: 400;
+            cursor: pointer; transition: all 0.18s; text-align: center;
+        }
+        .delivery-btn.active {
+            background: var(--color-1); color: var(--color-2);
+            border-color: var(--color-1); font-weight: 500;
+        }
+        .delivery-hint {
+            margin-top: 12px; padding: 10px 12px;
+            background: var(--color-2); border-radius: 5px;
+            font-size: 0.82rem; line-height: 1.6; opacity: 0.8;
+        }
+
+        /* BERECHTIGUNGSCODE */
+        .code-row { display: flex; gap: 8px; }
+        .code-input {
+            flex: 1; padding: 9px 10px;
+            border: 1px solid rgba(167,146,119,0.4); border-radius: 5px;
+            background: var(--color-2); font-family: "Rubik", sans-serif;
+            font-size: 0.875rem; color: var(--color-1); outline: none;
+            transition: border-color 0.2s;
+        }
+        .code-input:focus { border-color: var(--color-1); background: #fff; }
+        .code-input.error { border-color: #c0392b; }
+        .code-btn {
+            padding: 9px 14px; border: 1px solid var(--color-1); border-radius: 5px;
+            background: transparent; color: var(--color-1);
+            font-family: "Rubik", sans-serif; font-size: 0.82rem; font-weight: 500;
+            cursor: pointer; transition: all 0.18s; white-space: nowrap;
+        }
+        .code-btn:hover { background: var(--color-1); color: var(--color-2); }
+        .code-msg { font-size: 0.78rem; margin-top: 6px; min-height: 1rem; }
+        .code-msg.ok { color: #2d7a3a; }
+        .code-msg.err { color: #c0392b; }
+        .code-info {
+            margin-top: 12px; padding: 10px 12px;
+            background: var(--color-2); border-radius: 5px;
+            font-size: 0.82rem; line-height: 1.65; opacity: 0.8;
+        }
+
+        /* ORDER SUMMARY */
+        .order-card {
+            border: 1px solid rgba(167,146,119,0.35);
+            border-radius: 5px; padding: 18px; background: #fff;
+        }
+        .order-list { border-top: 1px solid rgba(167,146,119,0.2); }
+        .order-item {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            gap: 12px; padding: 10px 0;
+            border-bottom: 1px solid rgba(167,146,119,0.15);
+            font-size: 0.85rem;
+        }
+        .order-item:last-child { border-bottom: none; }
+        .order-item-name { font-weight: 500; line-height: 1.3; }
+        .order-item-sub { font-size: 0.75rem; opacity: 0.55; margin-top: 2px; }
+        .order-item-sub .sub-red { color: #c0392b; opacity: 1; }
+        .order-item-sub .sub-old { text-decoration: line-through; opacity: 0.5; margin-left: 3px; }
+        .order-item-price { font-weight: 500; white-space: nowrap; }
+        .order-item-price.red { color: #c0392b; }
+        .order-totals {
+            margin-top: 12px; padding-top: 12px;
+            border-top: 1px solid rgba(167,146,119,0.3);
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .totals-row { display: flex; justify-content: space-between; font-size: 0.85rem; opacity: 0.65; }
+        .totals-row.discount { color: #2d7a3a; opacity: 1; font-weight: 500; }
+        .totals-row.grand { font-weight: 500; font-size: 0.95rem; opacity: 1; }
+
+        /* SUBMIT */
+        .submit-btn {
+            width: 100%; margin-top: 16px; padding: 12px;
+            background: var(--color-1); color: var(--color-2);
+            border: none; border-radius: 5px;
+            font-family: "Rubik", sans-serif; font-size: 0.88rem; font-weight: 500;
+            cursor: pointer; transition: opacity 0.2s;
+        }
+        .submit-btn:hover:not(:disabled) { opacity: 0.85; }
+        .submit-btn:disabled { background: rgba(167,146,119,0.25); color: rgba(167,146,119,0.6); cursor: not-allowed; }
+        .fine-print { font-size: 0.7rem; opacity: 0.5; text-align: center; margin-top: 8px; line-height: 1.5; }
+
+        /* SUCCESS */
+        #successState {
+            display: none; text-align: center;
+            padding: 5rem 1.5rem; max-width: 480px; margin: 0 auto;
+            color: var(--color-1);
+        }
+        .success-icon {
+            width: 52px; height: 52px; border-radius: 50%;
+            background: var(--color-2); border: 1px solid rgba(167,146,119,0.4);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+        }
+        #successState h2 { font-size: 1.5rem; font-weight: 500; margin-bottom: 10px; }
+        #successState p { font-size: 0.88rem; opacity: 0.7; line-height: 1.7; margin-bottom: 24px; }
+        .order-number-box {
+            background: var(--color-2); border: 1px solid rgba(167,146,119,0.4);
+            border-radius: 5px; padding: 14px 18px; margin-bottom: 20px; text-align: center;
+        }
+        .order-number-label { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.55; margin-bottom: 6px; }
+        .order-number { font-size: 1.4rem; font-weight: 500; letter-spacing: 0.08em; color: var(--color-1); }
+
+        #emptyState { display: none; text-align: center; padding: 4rem 1rem; color: var(--color-1); opacity: 0.65; }
+        #emptyState p { margin-bottom: 16px; font-size: 0.9rem; }
+
+        .btn-primary {
+            display: inline-block; padding: 10px 24px;
+            background: var(--color-1); color: var(--color-2);
+            border-radius: 5px; text-decoration: none;
+            font-size: 0.85rem; font-weight: 500; transition: opacity 0.2s;
+        }
+        .btn-primary:hover { opacity: 0.85; color: var(--color-2); }
+
+        @media (min-width: 700px) {
+            .checkout-layout { grid-template-columns: 1fr 340px; align-items: start; }
+            .order-card { position: sticky; top: 20px; }
+        }
+        @media (max-width: 699px) {
+            .order-card { order: 2; }
+            .checkout-layout > div:first-child { order: 1; }
+        }
+        @media (min-width: 900px) {
+            .page-wrap { padding: 28px 50px 60px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <nav>
+        <div class="nav-logo">Jans Kräuterladen</div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="kontakt.html">Kontakt</a>
+            <a href="shop.html">Shop</a>
+            <a href="warenkorb.html">Warenkorb</a>
+        </div>
+    </nav>
+    <div class="nav-line"></div>
+</header>
+
+<main>
+    <div class="page-wrap">
+
+        <div id="emptyState">
+            <p>Ihr Warenkorb ist leer.</p>
+            <a href="shop.html" class="btn-primary">Zum Shop</a>
+        </div>
+
+        <div id="successState">
+            <div class="success-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A79277" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <h2>Vielen Dank!</h2>
+            <div class="order-number-box">
+                <div class="order-number-label">Deine Bestellnummer</div>
+                <div class="order-number" id="successOrderNr">–</div>
+            </div>
+            <p>Bitte notiere deine Bestellnummer. Wir melden uns schnellstmöglich per E-Mail bei dir.</p>
+            <a href="shop.html" class="btn-primary">Weiter einkaufen</a>
+        </div>
+
+        <div id="checkoutMain" style="display:none">
+            <h1>Kasse</h1>
+            <div class="checkout-layout">
+
+                <!-- LINKS: FORMULAR -->
+                <div>
+
+                    <!-- PERSÖNLICHE DATEN -->
+                    <div class="form-card">
+                        <div class="card-title">Persönliche Daten</div>
+                        <div class="form-row">
+                            <div class="field" id="f-vorname">
+                                <label>Vorname *</label>
+                                <input type="text" id="vorname" placeholder="Max" />
+                                <span class="err-msg">Pflichtfeld</span>
+                            </div>
+                            <div class="field" id="f-nachname">
+                                <label>Nachname *</label>
+                                <input type="text" id="nachname" placeholder="Mustermann" />
+                                <span class="err-msg">Pflichtfeld</span>
+                            </div>
+                        </div>
+                        <div class="form-row full">
+                            <div class="field" id="f-email">
+                                <label>E-Mail *</label>
+                                <input type="text" id="email" placeholder="max@beispiel.de" inputmode="email" autocomplete="email" />
+                                <span class="err-msg">Bitte gültige E-Mail angeben</span>
+                            </div>
+                        </div>
+                        <div class="form-row full">
+                            <div class="field">
+                                <label>Telefon (optional)</label>
+                                <input type="tel" id="telefon" placeholder="+49 123 456789" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EMPFANGSART -->
+                    <div class="form-card">
+                        <div class="card-title">Empfangsart</div>
+                        <div class="delivery-toggle">
+                            <button class="delivery-btn active" id="btnLieferung" onclick="setDelivery('lieferung')">📦 Lieferung</button>
+                            <button class="delivery-btn" id="btnAbholung" onclick="setDelivery('abholung')">🏠 Abholung</button>
+                        </div>
+
+                        <!-- Lieferung -->
+                        <div id="lieferungFields" style="margin-top:12px">
+                            <div class="delivery-hint">
+                                🚚 Es können Versandkosten von bis zu 9 € anfallen.
+                            </div>
+                            <div class="form-row full" style="margin-top:12px">
+                                <div class="field" id="f-strasse">
+                                    <label>Straße & Hausnummer *</label>
+                                    <input type="text" id="strasse" placeholder="Musterstraße 12" />
+                                    <span class="err-msg">Pflichtfeld</span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="field" id="f-plz">
+                                    <label>PLZ *</label>
+                                    <input type="text" id="plz" placeholder="12345" maxlength="5" />
+                                    <span class="err-msg">Pflichtfeld</span>
+                                </div>
+                                <div class="field" id="f-ort">
+                                    <label>Ort *</label>
+                                    <input type="text" id="ort" placeholder="Musterstadt" />
+                                    <span class="err-msg">Pflichtfeld</span>
+                                </div>
+                            </div>
+                            <div class="form-row full">
+                                <div class="field">
+                                    <label>Land</label>
+                                    <select id="land">
+                                        <option>Deutschland</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Abholung -->
+                        <div id="abholungFields" style="display:none; margin-top:12px">
+                            <div class="delivery-hint">
+                                📞 Abholung nach Vereinbarung per Telefon oder E-Mail. Wir melden uns bei Ihnen nach Eingang der Bestellung.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ANMERKUNGEN -->
+                    <div class="form-card">
+                        <div class="card-title">Anmerkungen</div>
+                        <div class="form-row full">
+                            <div class="field">
+                                <label>Nachricht (optional)</label>
+                                <textarea id="nachricht" placeholder="Besondere Wünsche zur Bestellung…"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BESTELLBERECHTIGUNG -->
+                    <div class="form-card">
+                        <div class="card-title">Bestellberechtigung</div>
+                        <div class="code-row">
+                            <input class="code-input" id="codeInput" type="text" placeholder="Berechtigungscode eingeben" />
+                            <button class="code-btn" id="codeBtn">Prüfen</button>
+                        </div>
+                        <div class="code-msg" id="codeMsg"></div>
+                        <div class="code-info">
+                            Nach Abschluss Ihrer Bestellung erhalten Sie innerhalb der nächsten 24 Stunden eine Bestellbestätigung und alle Zahlungsinformationen – gegebenenfalls auch die Informationen zur Abholung.
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- RECHTS: BESTELLUNG -->
+                <div class="order-card">
+                    <div class="card-title">Ihre Bestellung</div>
+                    <div class="order-list" id="orderItems"></div>
+                    <div class="order-totals">
+                        <div class="totals-row"><span>Zwischensumme</span><span id="sumSubtotal">–</span></div>
+                        <div class="totals-row discount" id="discountRow" style="display:none">
+                            <span id="discountLabel">Rabatt</span>
+                            <span id="discountAmt">–</span>
+                        </div>
+                        <div class="totals-row grand"><span>Gesamt</span><span id="sumTotal">–</span></div>
+                    </div>
+                    <button class="submit-btn" id="submitBtn" disabled>Bestellung absenden →</button>
+                    <p class="fine-print">Mit dem Absenden stimmen Sie unserer Datenschutzerklärung zu.</p>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<footer>
+    <div class="footer-logo">Jans Kräuterladen</div>
+    <div class="footer-links">
+        <a href="datenschutzerklaerung.html">Datenschutzerklärung</a>
+        <a href="impressum.html">Impressum</a>
+        <a href="agb.html">AGB</a>
+        <a href="widerrufsbelehrung.html">Widerrufsbelehrung</a>
+    </div>
+    <div class="footer-copyright">&copy; 2026 Jans Kräuterladen</div>
+</footer>
+
+<script>
+const WEB3FORMS_KEY = '9659b930-8c67-4c4b-bbc0-1a89925f62ef';
+const SUPABASE_URL  = 'https://iydsqjtkokkcbxdrwaav.supabase.co';
+const BUCKET        = 'produkte';
+
+function getCart() { return JSON.parse(localStorage.getItem('kraeuterladen_cart') || '[]'); }
+function fmt(n) { return n.toFixed(2).replace('.', ',') + ' €'; }
+function rnd(n) { return Math.round(n * 100) / 100; }
+
+// Bestellnummer: MM-XXXXX
+function genOrderNr() {
+    const mm = String(new Date().getMonth() + 1).padStart(2, '0');
+    const rand = String(Math.floor(10000 + Math.random() * 90000));
+    return `${mm}-${rand}`;
+}
+const orderNr = genOrderNr();
+
+// Empfangsart
+let deliveryMode = 'lieferung';
+function setDelivery(mode) {
+    deliveryMode = mode;
+    document.getElementById('btnLieferung').classList.toggle('active', mode === 'lieferung');
+    document.getElementById('btnAbholung').classList.toggle('active', mode === 'abholung');
+    document.getElementById('lieferungFields').style.display = mode === 'lieferung' ? 'block' : 'none';
+    document.getElementById('abholungFields').style.display  = mode === 'abholung'  ? 'block' : 'none';
+}
+
+// Berechtigungscodes
+let berechtigungscodes = [];
+let codeValid = false;
+
+async function loadCodes() {
+    try {
+        const res = await fetch(`${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/berechtigungscodes.json`);
+        berechtigungscodes = await res.json();
+    } catch(e) { berechtigungscodes = []; }
+}
+
+function checkCode() {
+    const input = document.getElementById('codeInput').value.trim();
+    const msg   = document.getElementById('codeInput');
+    const msgEl = document.getElementById('codeMsg');
+
+    const gefunden = berechtigungscodes.find(c => c.code === input);
+    if (gefunden) {
+        msgEl.className = 'code-msg ok';
+        msgEl.textContent = '✓ Code akzeptiert.';
+        document.getElementById('codeInput').classList.remove('error');
+        codeValid = true;
+        document.getElementById('submitBtn').disabled = false;
+    } else {
+        msgEl.className = 'code-msg err';
+        msgEl.textContent = 'Dieser Code ist nicht berechtigt.';
+        document.getElementById('codeInput').classList.add('error');
+        codeValid = false;
+        document.getElementById('submitBtn').disabled = true;
+    }
+}
+
+document.getElementById('codeBtn').addEventListener('click', checkCode);
+document.getElementById('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkCode(); });
+document.getElementById('codeInput').addEventListener('input', () => {
+    document.getElementById('codeInput').classList.remove('error');
+    document.getElementById('codeMsg').textContent = '';
+    codeValid = false;
+    document.getElementById('submitBtn').disabled = true;
+});
+
+// Warenkorb & Rabattcode
+const cart = getCart();
+const appliedCode = JSON.parse(sessionStorage.getItem('kl_rabattcode') || 'null');
+
+function calcDiscount(code, subtotal) {
+    if (!code) return 0;
+    if (code.mindestbestellwert && subtotal < code.mindestbestellwert) return 0;
+    if (code.typ === 'prozent') return rnd(subtotal * (code.wert / 100));
+    if (code.typ === 'fest') return rnd(Math.min(code.wert, subtotal));
+    return 0;
+}
+
+if (!cart.length) {
+    document.getElementById('emptyState').style.display = 'block';
+} else {
+    document.getElementById('checkoutMain').style.display = 'block';
+
+    let subtotal = 0;
+    const container = document.getElementById('orderItems');
+
+    cart.forEach(item => {
+        const anzahl            = item.anzahl ?? item.menge ?? 1;
+        const gesamtpreis       = item.gesamtpreis ?? rnd((item.preis ?? 0) * anzahl);
+        const hatRabatt         = item.hatRabatt ?? false;
+        const rabattProStueck   = item.rabattProStueck ?? rnd(gesamtpreis / anzahl);
+        const ursprungProStueck = item.ursprungProStueck ?? rnd(gesamtpreis / anzahl);
+        subtotal = rnd(subtotal + gesamtpreis);
+
+        let subLine = `${anzahl} Stück`;
+        if (hatRabatt) {
+            subLine += ` · <span class="sub-red">${fmt(rabattProStueck)}</span><span class="sub-old">${fmt(ursprungProStueck)}</span> / Stück`;
+        } else {
+            subLine += ` · ${fmt(rabattProStueck)} / Stück`;
+        }
+
+        const div = document.createElement('div');
+        div.className = 'order-item';
+        div.innerHTML = `
+            <div>
+                <div class="order-item-name">${item.name}</div>
+                <div class="order-item-sub">${subLine}</div>
+            </div>
+            <div class="order-item-price${hatRabatt ? ' red' : ''}">${fmt(gesamtpreis)}</div>`;
+        container.appendChild(div);
+    });
+
+    const discount = calcDiscount(appliedCode, subtotal);
+    const total = rnd(subtotal - discount);
+    document.getElementById('sumSubtotal').textContent = fmt(subtotal);
+    document.getElementById('sumTotal').textContent = fmt(total);
+
+    if (discount > 0) {
+        document.getElementById('discountRow').style.display = 'flex';
+        document.getElementById('discountLabel').textContent = `Rabatt (${appliedCode.code})`;
+        document.getElementById('discountAmt').textContent = '− ' + fmt(discount);
+    }
+}
+
+// Validierung
+function req(id) {
+    const el = document.getElementById(id);
+    const w  = document.getElementById('f-' + id);
+    if (!el || !el.value.trim()) { if(w) w.classList.add('has-error'); return false; }
+    if(w) w.classList.remove('has-error'); return true;
+}
+function validEmail() {
+    const el = document.getElementById('email');
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(el.value.trim());
+    const w  = document.getElementById('f-email');
+    if (!ok) { if(w) w.classList.add('has-error'); return false; }
+    if(w) w.classList.remove('has-error'); return true;
+}
+['vorname','nachname','email','strasse','plz','ort'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('input', () => {
+        const w = document.getElementById('f-' + id);
+        if(w) w.classList.remove('has-error');
+    });
+});
+
+document.getElementById('submitBtn')?.addEventListener('click', async () => {
+    if (!codeValid) return;
+
+    const baseChecks  = [req('vorname'), req('nachname'), validEmail()];
+    const adressChecks = deliveryMode === 'lieferung' ? [req('strasse'), req('plz'), req('ort')] : [];
+    const ok = [...baseChecks, ...adressChecks].every(Boolean);
+    if (!ok) { window.scrollTo({top:0,behavior:'smooth'}); return; }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true; btn.textContent = 'Wird gesendet…';
+
+    const cart = getCart();
+    let subtotal = 0;
+
+    const orderLines = cart.map(item => {
+        const anzahl            = item.anzahl ?? item.menge ?? 1;
+        const gesamtpreis       = item.gesamtpreis ?? rnd((item.preis ?? 0) * anzahl);
+        const hatRabatt         = item.hatRabatt ?? false;
+        const rabattProStueck   = item.rabattProStueck ?? rnd(gesamtpreis / anzahl);
+        const ursprungProStueck = item.ursprungProStueck ?? rnd(gesamtpreis / anzahl);
+        subtotal = rnd(subtotal + gesamtpreis);
+
+        let zeile = `• ${item.name} — ${anzahl} Stück`;
+        if (hatRabatt) {
+            zeile += ` · ${fmt(rabattProStueck)}/Stück (orig. ${fmt(ursprungProStueck)}) = ${fmt(gesamtpreis)} [${item.rabattLabel || ''}]`;
+        } else {
+            zeile += ` · ${fmt(rabattProStueck)}/Stück = ${fmt(gesamtpreis)}`;
+        }
+        return zeile;
+    }).join('\n');
+
+    const discount = calcDiscount(appliedCode, subtotal);
+    const total    = rnd(subtotal - discount);
+    const rabattZeile = discount > 0 ? `\nRabattcode: ${appliedCode.code} (− ${fmt(discount)})` : '';
+
+    const adressBlock = deliveryMode === 'lieferung'
+        ? `${document.getElementById('strasse').value.trim()}\n${document.getElementById('plz').value.trim()} ${document.getElementById('ort').value.trim()}\nDeutschland`
+        : 'Abholung (Vereinbarung per Telefon/Mail)';
+
+    const body = {
+        access_key: WEB3FORMS_KEY,
+        subject: `Bestellung ${orderNr} – ${document.getElementById('vorname').value.trim()} ${document.getElementById('nachname').value.trim()}`,
+        from_name: 'Jans Kräuterladen Shop',
+        name: `${document.getElementById('vorname').value.trim()} ${document.getElementById('nachname').value.trim()}`,
+        email: document.getElementById('email').value.trim(),
+        message: `
+=== NEUE BESTELLUNG ===
+Bestellnummer:      ${orderNr}
+Berechtigungscode:  ${document.getElementById('codeInput').value.trim()}
+
+KUNDENDATEN
+Name:     ${document.getElementById('vorname').value.trim()} ${document.getElementById('nachname').value.trim()}
+E-Mail:   ${document.getElementById('email').value.trim()}
+Telefon:  ${document.getElementById('telefon').value.trim() || '–'}
+
+EMPFANGSART: ${deliveryMode === 'lieferung' ? 'Lieferung' : 'Abholung'}
+${adressBlock}
+
+BESTELLUNG
+${orderLines}
+
+Zwischensumme: ${fmt(subtotal)}${rabattZeile}
+Gesamtbetrag:  ${fmt(total)}
+
+ANMERKUNGEN
+${document.getElementById('nachricht').value.trim() || '–'}
+        `.trim(),
+        botcheck: ''
+    };
+
+    try {
+        const res = await fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (data.success) {
+            localStorage.removeItem('kraeuterladen_cart');
+            sessionStorage.removeItem('kl_rabattcode');
+            sessionStorage.removeItem('kl_discount');
+            document.getElementById('successOrderNr').textContent = orderNr;
+            document.getElementById('checkoutMain').style.display = 'none';
+            document.getElementById('successState').style.display = 'block';
+            window.scrollTo({top:0,behavior:'smooth'});
+        } else { throw new Error(data.message || 'Fehler'); }
+    } catch(e) {
+        btn.disabled = false; btn.textContent = 'Bestellung absenden →';
+        alert('Fehler beim Senden: ' + e.message);
+    }
+});
+
+// Init
+loadCodes();
+</script>
+</body>
+</html>

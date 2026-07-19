@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <title>Warenkorb – Jans Kräuterladen</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Rubik:ital,wght@0,300..900;1,300..900&family=Slabo+27px&display=swap" rel="stylesheet">
+    <style>
+        .page-wrap { padding: 24px 12px 50px; color: var(--color-1); max-width: 700px; margin: 0 auto; }
+        .page-wrap h1 { font-size: 1.6rem; font-weight: 500; margin-bottom: 20px; }
+
+        /* EMPTY */
+        .empty-state { text-align: center; padding: 4rem 1rem; opacity: 0.65; }
+        .empty-state p { margin-bottom: 16px; font-size: 0.9rem; }
+
+        /* CART ITEMS */
+        .cart-list { border-top: 1px solid rgba(167,146,119,0.3); }
+
+        .cart-item {
+            display: grid;
+            grid-template-columns: 60px 1fr auto;
+            gap: 12px;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(167,146,119,0.2);
+        }
+        /* Kein border-bottom beim letzten Item — der finale Strich kommt von .cart-summary */
+        .cart-item:last-child { border-bottom: none; }
+
+        .cart-thumb {
+            width: 60px; height: 60px;
+            border-radius: 5px; border: 1px solid rgba(167,146,119,0.3);
+            overflow: hidden; background: var(--color-2); flex-shrink: 0;
+        }
+        .cart-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+        .cart-item-info { display: flex; flex-direction: column; gap: 2px; }
+        .cart-item-name { font-weight: 500; font-size: 0.92rem; line-height: 1.2; }
+        .cart-item-menge { font-size: 0.78rem; opacity: 0.55; }
+
+        /* Preis pro Stück mit Rabatt */
+        .cart-item-preis { font-size: 0.8rem; margin-top: 1px; }
+        .cart-item-preis .p-red { color: #c0392b; font-weight: 500; }
+        .cart-item-preis .p-old { text-decoration: line-through; opacity: 0.4; font-size: 0.73rem; margin-left: 3px; }
+        .cart-item-preis .p-badge {
+            font-size: 0.65rem; font-weight: 600; color: #c0392b;
+            background: #fdecea; padding: 1px 5px; border-radius: 999px; margin-left: 3px;
+        }
+
+        .remove-btn {
+            background: none; border: none; cursor: pointer;
+            font-family: "Rubik", sans-serif; font-size: 0.72rem;
+            color: var(--color-1); opacity: 0.4;
+            padding: 0; text-decoration: underline; text-underline-offset: 2px;
+            transition: opacity 0.2s; margin-top: 4px;
+        }
+        .remove-btn:hover { opacity: 1; }
+
+        .cart-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0; }
+        .line-total { font-weight: 500; font-size: 0.92rem; }
+        .line-total.red { color: #c0392b; }
+
+        /* RABATTCODE */
+        .rabatt-section {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(167,146,119,0.3);
+        }
+        .rabatt-label {
+            font-size: 0.72rem; font-weight: 500; letter-spacing: 0.07em;
+            text-transform: uppercase; opacity: 0.55; margin-bottom: 8px;
+        }
+        .rabatt-row { display: flex; gap: 8px; }
+        .rabatt-input {
+            flex: 1; padding: 9px 10px;
+            border: 1px solid rgba(167,146,119,0.4); border-radius: 5px;
+            background: var(--color-2); font-family: "Rubik", sans-serif;
+            font-size: 0.85rem; color: var(--color-1); outline: none;
+            transition: border-color 0.2s; text-transform: uppercase;
+        }
+        .rabatt-input:focus { border-color: var(--color-1); background: #fff; }
+        .rabatt-input::placeholder { text-transform: none; opacity: 0.4; }
+        .rabatt-apply-btn {
+            padding: 9px 16px; border: 1px solid var(--color-1); border-radius: 5px;
+            background: transparent; color: var(--color-1);
+            font-family: "Rubik", sans-serif; font-size: 0.82rem; font-weight: 500;
+            cursor: pointer; transition: all 0.18s; white-space: nowrap;
+        }
+        .rabatt-apply-btn:hover { background: var(--color-1); color: var(--color-2); }
+        .rabatt-msg {
+            font-size: 0.78rem; margin-top: 6px; min-height: 1rem;
+        }
+        .rabatt-msg.ok { color: #2d7a3a; }
+        .rabatt-msg.err { color: #c0392b; }
+
+        /* SUMMARY */
+        .cart-summary {
+            margin-top: 20px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(167,146,119,0.4);
+            display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
+        }
+        .summary-row { display: flex; gap: 40px; font-size: 0.85rem; opacity: 0.7; justify-content: flex-end; }
+        .summary-row.discount { color: #2d7a3a; opacity: 1; font-weight: 500; }
+        .summary-row.total { font-weight: 500; font-size: 0.95rem; opacity: 1; }
+
+        .checkout-btn {
+            margin-top: 8px; padding: 11px 28px;
+            background: var(--color-1); color: var(--color-2);
+            border: none; border-radius: 5px;
+            font-family: "Rubik", sans-serif; font-size: 0.85rem; font-weight: 500;
+            cursor: pointer; text-decoration: none; display: inline-block;
+            transition: opacity 0.2s;
+        }
+        .checkout-btn:hover { opacity: 0.85; color: var(--color-2); }
+
+        .back-link {
+            display: inline-block; margin-top: 16px;
+            font-size: 0.82rem; opacity: 0.65;
+            text-decoration: underline; text-underline-offset: 2px;
+        }
+        .back-link:hover { opacity: 1; }
+
+        .btn-empty {
+            display: inline-block; padding: 10px 24px;
+            background: var(--color-1); color: var(--color-2);
+            border-radius: 5px; text-decoration: none;
+            font-size: 0.85rem; font-weight: 500; transition: opacity 0.2s;
+        }
+        .btn-empty:hover { opacity: 0.85; color: var(--color-2); }
+
+        @media (min-width: 900px) {
+            .page-wrap { padding: 28px 50px 60px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <nav>
+        <div class="nav-logo">Jans Kräuterladen</div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="kontakt.html">Kontakt</a>
+            <a href="shop.html">Shop</a>
+            <a href="warenkorb.html" class="underlined">Warenkorb</a>
+        </div>
+    </nav>
+    <div class="nav-line"></div>
+</header>
+
+<main>
+    <div class="page-wrap">
+        <h1>Warenkorb</h1>
+
+        <div id="emptyState" class="empty-state" style="display:none">
+            <p>Ihr Warenkorb ist leer.</p>
+            <a href="shop.html" class="btn-empty">Zum Shop</a>
+        </div>
+
+        <div id="cartContent" style="display:none">
+            <div class="cart-list" id="cartItems"></div>
+
+            <!-- RABATTCODE -->
+            <div class="rabatt-section">
+                <div class="rabatt-label">Rabattcode</div>
+                <div class="rabatt-row">
+                    <input class="rabatt-input" id="codeInput" type="text" placeholder="Code eingeben" maxlength="20" />
+                    <button class="rabatt-apply-btn" id="applyBtn">Einlösen</button>
+                </div>
+                <div class="rabatt-msg" id="rabattMsg"></div>
+            </div>
+
+            <!-- SUMMARY -->
+            <div class="cart-summary">
+                <div class="summary-row"><span>Zwischensumme</span><span id="sumSubtotal">–</span></div>
+                <div class="summary-row discount" id="sumDiscountRow" style="display:none">
+                    <span id="sumDiscountLabel">Rabatt</span>
+                    <span id="sumDiscount">–</span>
+                </div>
+                <div class="summary-row total"><span>Gesamt</span><span id="sumTotal">–</span></div>
+                <a href="checkout.html" class="checkout-btn" id="checkoutLink">Zur Kasse →</a>
+            </div>
+
+            <a href="shop.html" class="back-link">← Weiter einkaufen</a>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="footer-logo">Jans Kräuterladen</div>
+    <div class="footer-links">
+        <a href="datenschutzerklaerung.html">Datenschutzerklärung</a>
+        <a href="impressum.html">Impressum</a>
+        <a href="agb.html">AGB</a>
+        <a href="widerrufsbelehrung.html">Widerrufsbelehrung</a>
+    </div>
+    <div class="footer-copyright">&copy; 2026 Jans Kräuterladen</div>
+</footer>
+
+<script>
+const SUPABASE_URL  = 'https://iydsqjtkokkcbxdrwaav.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5ZHNxanRrb2trY2J4ZHJ3YWF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Njk2NTIsImV4cCI6MjA5MjE0NTY1Mn0.qLiRzBRJuYr7Q65UGueVY76BKP6huOVnnxUqWKdjgCI';
+const BUCKET   = 'produkte';
+const JSON_FILE = 'products.json';
+
+function getCart() { return JSON.parse(localStorage.getItem('kraeuterladen_cart') || '[]'); }
+function saveCart(c) { localStorage.setItem('kraeuterladen_cart', JSON.stringify(c)); }
+function imageUrl(p) { return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${p}`; }
+function fmt(n) { return n.toFixed(2).replace('.', ',') + ' €'; }
+
+// Aktiver Rabattcode aus sessionStorage (bleibt bis Tab geschlossen)
+let appliedCode = JSON.parse(sessionStorage.getItem('kl_rabattcode') || 'null');
+let allCodes = []; // wird aus JSON geladen
+
+// Lade Rabattcodes aus products.json
+async function loadCodes() {
+    try {
+        const res = await fetch(`${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/rabattcodes.json`);
+        const data = await res.json();
+        allCodes = Array.isArray(data) ? data : [];
+    } catch(e) { allCodes = []; }
+}
+
+function findCode(input) {
+    return allCodes.find(c => c.code.toUpperCase() === input.toUpperCase());
+}
+
+function calcDiscount(code, subtotal) {
+    if (!code) return 0;
+    if (code.mindestbestellwert && subtotal < code.mindestbestellwert) return 0;
+    if (code.typ === 'prozent') return subtotal * (code.wert / 100);
+    if (code.typ === 'fest') return Math.min(code.wert, subtotal);
+    return 0;
+}
+
+function rnd(n) { return Math.round(n * 100) / 100; }
+
+function render() {
+    const cart = getCart();
+    if (!cart.length) {
+        document.getElementById('emptyState').style.display = 'block';
+        document.getElementById('cartContent').style.display = 'none';
+        return;
+    }
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('cartContent').style.display = 'block';
+
+    const container = document.getElementById('cartItems');
+    container.innerHTML = '';
+    let subtotal = 0;
+
+    cart.forEach((item, idx) => {
+        const anzahl          = item.anzahl ?? item.menge ?? 1;
+        const gesamtpreis     = item.gesamtpreis     ?? rnd((item.preis ?? 0) * anzahl);
+        const ursprungspreis  = item.ursprungspreis  ?? gesamtpreis;
+        const rabattProStueck = item.rabattProStueck ?? rnd(gesamtpreis / anzahl);
+        const ursprungProStueck = item.ursprungProStueck ?? rnd(ursprungspreis / anzahl);
+        const hatRabatt       = item.hatRabatt ?? false;
+
+        subtotal = rnd(subtotal + gesamtpreis);
+
+        const mengeLabel = anzahl === 1 ? '1 Stück' : `${anzahl} Stück`;
+
+        let preisHTML = '';
+        if (hatRabatt) {
+            preisHTML = `<span class="p-red">${fmt(rabattProStueck)}</span> <span class="p-old">${fmt(ursprungProStueck)}</span><span class="p-badge">${item.rabattLabel || ''}</span> / Stück`;
+        } else {
+            preisHTML = `${fmt(rabattProStueck)} / Stück`;
+        }
+
+        const div = document.createElement('div');
+        div.className = 'cart-item';
+        div.innerHTML = `
+            <div class="cart-thumb">
+                <img src="${imageUrl(item.bild)}" alt="${item.name}" onerror="this.style.display='none'" />
+            </div>
+            <div class="cart-item-info">
+                <div class="cart-item-name">${item.name}</div>
+                <div class="cart-item-menge">${mengeLabel}</div>
+                <div class="cart-item-preis">${preisHTML}</div>
+                <button class="remove-btn" data-idx="${idx}">Entfernen</button>
+            </div>
+            <div class="cart-item-right">
+                <div class="line-total${hatRabatt ? ' red' : ''}">${fmt(gesamtpreis)}</div>
+            </div>`;
+        container.appendChild(div);
+    });
+
+    const discount = appliedCode ? rnd(calcDiscount(appliedCode, subtotal)) : 0;
+    const total = rnd(subtotal - discount);
+
+    document.getElementById('sumSubtotal').textContent = fmt(subtotal);
+
+    const discRow = document.getElementById('sumDiscountRow');
+    if (discount > 0) {
+        discRow.style.display = 'flex';
+        document.getElementById('sumDiscountLabel').textContent = `Rabatt (${appliedCode.code})`;
+        document.getElementById('sumDiscount').textContent = '− ' + fmt(discount);
+    } else {
+        discRow.style.display = 'none';
+    }
+
+    document.getElementById('sumTotal').textContent = fmt(total);
+
+    if (discount > 0) {
+        sessionStorage.setItem('kl_rabattcode', JSON.stringify(appliedCode));
+        sessionStorage.setItem('kl_discount', discount.toFixed(2));
+    } else {
+        sessionStorage.removeItem('kl_discount');
+    }
+
+    container.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const c = getCart();
+            c.splice(+btn.dataset.idx, 1);
+            saveCart(c);
+            render();
+        });
+    });
+}
+
+// Rabattcode einlösen / entfernen
+document.getElementById('applyBtn').addEventListener('click', () => {
+    const btn = document.getElementById('applyBtn');
+    const msg = document.getElementById('rabattMsg');
+
+    // Entfernen-Modus
+    if (btn.dataset.mode === 'remove') {
+        appliedCode = null;
+        sessionStorage.removeItem('kl_rabattcode');
+        sessionStorage.removeItem('kl_discount');
+        document.getElementById('codeInput').value = '';
+        msg.className = 'rabatt-msg';
+        msg.textContent = '';
+        btn.textContent = 'Einlösen';
+        btn.dataset.mode = '';
+        render();
+        return;
+    }
+
+    // Einlösen-Modus
+    const input = document.getElementById('codeInput').value.trim();
+    if (!input) { msg.className = 'rabatt-msg err'; msg.textContent = 'Bitte einen Code eingeben.'; return; }
+
+    const code = findCode(input);
+    if (!code) {
+        msg.className = 'rabatt-msg err';
+        msg.textContent = 'Dieser Code ist ungültig.';
+        appliedCode = null;
+        sessionStorage.removeItem('kl_rabattcode');
+        render(); return;
+    }
+
+    // Subtotal korrekt berechnen
+    const cart = getCart();
+    const subtotal = cart.reduce((s, i) => rnd(s + (i.gesamtpreis ?? rnd((i.preis ?? 0) * (i.anzahl ?? i.menge ?? 1)))), 0);
+
+    if (code.mindestbestellwert && subtotal < code.mindestbestellwert) {
+        msg.className = 'rabatt-msg err';
+        msg.textContent = `Dieser Code gilt erst ab ${fmt(code.mindestbestellwert)} Einkaufswert.`;
+        appliedCode = null;
+        sessionStorage.removeItem('kl_rabattcode');
+        render(); return;
+    }
+
+    appliedCode = code;
+    sessionStorage.setItem('kl_rabattcode', JSON.stringify(code));
+    msg.className = 'rabatt-msg ok';
+    const beschreibung = code.typ === 'prozent'
+        ? `${code.wert} % Rabatt`
+        : `${fmt(code.wert)} Rabatt`;
+    msg.textContent = `✓ Code eingelöst — ${beschreibung}`;
+
+    // Button zu "Code entfernen" umschalten
+    document.getElementById('applyBtn').textContent = 'Entfernen';
+    document.getElementById('applyBtn').dataset.mode = 'remove';
+    render();
+});
+
+// Enter-Taste im Input
+document.getElementById('codeInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('applyBtn').click();
+});
+
+// Init
+(async () => {
+    await loadCodes();
+    // Gespeicherten Code wiederherstellen
+    const saved = sessionStorage.getItem('kl_rabattcode');
+    if (saved) {
+        try {
+            appliedCode = JSON.parse(saved);
+            document.getElementById('codeInput').value = appliedCode.code;
+            document.getElementById('rabattMsg').className = 'rabatt-msg ok';
+            const beschreibung = appliedCode.typ === 'prozent'
+                ? `${appliedCode.wert} % Rabatt`
+                : `${fmt(appliedCode.wert)} Rabatt`;
+            document.getElementById('rabattMsg').textContent = `✓ Code eingelöst — ${beschreibung}`;
+            document.getElementById('applyBtn').textContent = 'Entfernen';
+            document.getElementById('applyBtn').dataset.mode = 'remove';
+        } catch(e) { appliedCode = null; }
+    }
+    render();
+})();
+</script>
+</body>
+</html>
